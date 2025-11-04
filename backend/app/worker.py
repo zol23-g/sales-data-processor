@@ -51,6 +51,10 @@ def process_sales_data_task(self, file_path: str, job_id: str):
         
         result = csv_processor.process_csv_stream(file_chunk_generator())
         
+        # Update progress
+        if job:
+            job.update_progress(result.valid_rows, result.total_rows)
+        
         # Write results
         output_filename = file_storage.generate_output_filename(job_id)
         output_path = file_storage.get_output_path(output_filename)

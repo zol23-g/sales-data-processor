@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from typing import Optional
 import uuid
+import aiofiles
 
 from app.core.config import settings
 from app.core.logger import get_logger, configure_logger
@@ -111,13 +112,29 @@ async def process_uploaded_file(file: UploadFile, job_id: str):
     try:
         job = job_manager.get_job(job_id)
         
-        # Process file in chunks
-        async def chunk_generator():
-            async for chunk in file.file:
-                yield chunk
+        # Save uploaded file temporarily
+        temp_filename = f"temp_{job_id}.csv"
+        temp_path = file_storage.get_output_path(temp_filename)
+        
+        # Save the uploaded file
+        async with aiofiles.open(temp_path, 'wb') as f:
+            content = await file.read()
+            await f.write(content)
+        
+        # Process the saved file
+        def file_chunk_generator():
+            with open(temp_path, 'rb') as f:
+                while True:
+                    chunk = f.read(8192)
+                    if not chunk:
+                        break
+                    yield chunk
         
         # Process CSV
-        result = csv_processor.process_csv_stream(chunk_generator())
+        result = csv_processor.process_csv_stream(file_chunk_generator())
+        
+        # Update progress
+        job.update_progress(result.valid_rows, result.total_rows)
         
         # Write results
         output_filename = file_storage.generate_output_filename(job_id)
@@ -139,3 +156,7 @@ async def process_uploaded_file(file: UploadFile, job_id: str):
         job.fail(str(e))
     finally:
         await file.close()
+        # Clean up temporary file
+        import os
+        if 'temp_path' in locals() and os.path.exists(temp_path):
+            os.remove(temp_path)
