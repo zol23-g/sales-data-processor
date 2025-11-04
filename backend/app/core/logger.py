@@ -16,18 +16,19 @@ def configure_logger(environment: str = "development") -> None:
         structlog.stdlib.PositionalArgumentsFormatter(),
         timestamper,
         structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
     ]
     
     if environment == "production":
         processors = shared_processors + [
-            structlog.processors.format_exc_info,
             structlog.processors.JSONRenderer()
         ]
+        log_level = logging.WARNING
     else:
         processors = shared_processors + [
-            structlog.processors.format_exc_info,
             structlog.dev.ConsoleRenderer(colors=True)
         ]
+        log_level = logging.DEBUG if environment == "development" else logging.INFO
     
     structlog.configure(
         processors=processors,
@@ -40,8 +41,13 @@ def configure_logger(environment: str = "development") -> None:
     logging.basicConfig(
         format="%(message)s",
         stream=sys.stdout,
-        level=logging.INFO if environment == "production" else logging.DEBUG,
+        level=log_level,
     )
+    
+    # Set specific log levels for noisy libraries
+    logging.getLogger("grpc").setLevel(logging.WARNING)
+    logging.getLogger("celery").setLevel(logging.INFO)
+    logging.getLogger("redis").setLevel(logging.INFO)
 
 
 def get_logger(name: str) -> structlog.BoundLogger:

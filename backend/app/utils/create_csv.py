@@ -31,15 +31,13 @@ for single_date in daterange(start_date, end_date):
     date_str = single_date.strftime("%Y-%m-%d")
     for dept in departments:
         sales = random.randint(dept["base_min"], dept["base_max"])
-        # Add some weekend boost for certain departments
         if single_date.weekday() >= 5:  # Saturday and Sunday
             if dept["name"] in ["Electronics", "Clothing", "Sports"]:
                 sales = int(sales * random.uniform(1.1, 1.6))
         data.append([dept["name"], date_str, sales])
 
-# If we haven't reached 1000 records, add some more from random days
-# This ensures we get exactly 1000 lines of *data* (plus header)
-while len(data) < 1001: # Target is 1000 data rows + 1 header row
+
+while len(data) < 1001: 
     random_date = start_date + timedelta(days=random.randint(0, (end_date - start_date).days))
     date_str = random_date.strftime("%Y-%m-%d")
     dept = random.choice(departments)

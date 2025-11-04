@@ -1,11 +1,10 @@
-import os
 from typing import List
 from pydantic_settings import BaseSettings
-from pydantic import Field, ConfigDict
+from pydantic import Field, ConfigDict, field_validator
 
 
-class Settings(BaseSettings):
-    """Application settings configuration."""
+class BaseSettings(BaseSettings):
+    """Base application settings configuration."""
     
     # Application
     APP_NAME: str = "Sales Data Processor"
@@ -36,54 +35,37 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = Field("redis://localhost:6379/0", env="CELERY_RESULT_BACKEND")
     
     # Security
-    SECRET_KEY: str = Field("your-secret-key-here", env="SECRET_KEY")
+    SECRET_KEY: str = Field("your-secret-key-change-in-production", env="SECRET_KEY")
     TOKEN_EXPIRE_MINUTES: int = Field(30, env="TOKEN_EXPIRE_MINUTES")
     
-    # CORS
+    # CORS 
     ALLOWED_ORIGINS: List[str] = Field(["http://localhost:3000"], env="ALLOWED_ORIGINS")
+    
+    # Database (if needed later)
+    DATABASE_URL: str = Field("", env="DATABASE_URL")
+    
+    # Logging
+    LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
+    
+    @field_validator('ALLOWED_ORIGINS', mode='before')
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        """Parse ALLOWED_ORIGINS from string to list."""
+        if isinstance(v, str):
+            # Handle comma-separated string
+            if ',' in v:
+                return [origin.strip() for origin in v.split(',')]
+            # Handle single value
+            elif v:
+                return [v.strip()]
+            # Handle empty string
+            else:
+                return []
+        return v
     
     # Pydantic v2 configuration
     model_config = ConfigDict(
-        env_file=".env",
         case_sensitive=True,
-        extra="ignore"
+        extra="ignore",
+        env_file_encoding='utf-8'
     )
-
-
-# Environment-specific settings
-class DevelopmentSettings(Settings):
-    DEBUG: bool = True
-    ENVIRONMENT: str = "development"
-
-
-class TestingSettings(Settings):
-    DEBUG: bool = True
-    ENVIRONMENT: str = "testing"
-    REDIS_URL: str = "redis://localhost:6379/1"
-    UPLOAD_DIR: str = "test_uploads"
-    OUTPUT_DIR: str = "test_outputs"
-
-
-class StagingSettings(Settings):
-    DEBUG: bool = False
-    ENVIRONMENT: str = "staging"
-
-
-class ProductionSettings(Settings):
-    DEBUG: bool = False
-    ENVIRONMENT: str = "production"
-
-
-def get_settings() -> Settings:
-    """Get environment-specific settings."""
-    env = os.getenv("ENVIRONMENT", "development")
-    settings_map = {
-        "development": DevelopmentSettings,
-        "testing": TestingSettings,
-        "staging": StagingSettings,
-        "production": ProductionSettings,
-    }
-    return settings_map[env]()
-
-
-settings = get_settings()
