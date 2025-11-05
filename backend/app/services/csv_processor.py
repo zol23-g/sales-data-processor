@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 import io
 import uuid
 from typing import Dict, Generator, List, Optional, Tuple, AsyncGenerator
@@ -153,20 +154,50 @@ class CSVProcessor:
         )
     
     def _parse_csv_line(self, line: str) -> Optional[SalesRecord]:
-        """Parse a single CSV line into SalesRecord."""
+        """Parse a single CSV line into SalesRecord with strict validation."""
         try:
-            # Skip header and empty lines
+            # Skip empty lines and header
             if not line or line.startswith('Department Name'):
                 return None
-                
-            # Simple CSV parsing
-            parts = [part.strip().strip('"') for part in line.split(',')]
+            
+            # Use CSV reader to handle quoted fields and commas within fields
+            reader = csv.reader(io.StringIO(line))
+            parts = next(reader)
+            
+            # Must have exactly 3 columns
             if len(parts) != 3:
                 return None
-                
-            return SalesRecord.from_csv_row(parts)
+            
+            department = parts[0].strip()
+            date_str = parts[1].strip()
+            sales_str = parts[2].strip()
+            
+            # Validate department name
+            if not department:
+                return None
+            
+            # Validate date format (YYYY-MM-DD)
+            try:
+                datetime.strptime(date_str, '%Y-%m-%d')
+            except ValueError:
+                return None
+            
+            # Validate sales number
+            try:
+                sales = int(sales_str)
+                if sales < 0:  # Sales cannot be negative
+                    return None
+            except ValueError:
+                return None
+            
+            return SalesRecord(
+                department=department,
+                date=date_str,
+                sales=sales
+            )
+            
         except Exception as e:
-            self.logger.warning("Failed to parse CSV line", line=line, error=str(e))
+            self.logger.debug("Failed to parse CSV line", line=line, error=str(e))
             return None
     
     def _update_department_sales(
