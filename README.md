@@ -33,7 +33,7 @@ A high-performance full-stack application for processing large CSV files contain
 - Node.js 18+ (for frontend development)
 - Redis (handled by Docker)
 
-## 🛠️ Quick Start
+##  Quick Start
 
 ### Using Docker (Recommended)
 
@@ -380,9 +380,9 @@ sales-data-processor/
    - Regenerate code: `make proto`
 
 
-## 🎉 Success!
+## Success!
 
-Your Sales Data Processor is now running! 🚀
+Your Sales Data Processor is now running! 
 
 - Frontend: http://localhost:3000
 - API Docs: http://localhost:8000/docs
