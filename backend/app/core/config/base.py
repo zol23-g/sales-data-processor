@@ -38,10 +38,10 @@ class BaseSettings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-in-production"
     TOKEN_EXPIRE_MINUTES: int = 30
     
-    # CORS - Handle as comma-separated string in env, but convert to list
+    # CORS 
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
     
-    # Database (if needed later)
+    # Database
     DATABASE_URL: str = ""
     
     # Logging
