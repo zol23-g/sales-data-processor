@@ -7,7 +7,7 @@ from .staging import StagingSettings
 from .production import ProductionSettings
 
 
-def get_settings() -> Type[BaseSettings]:
+def get_settings() -> BaseSettings:
     """Get environment-specific settings."""
     env = os.getenv("ENVIRONMENT", "development")
     settings_map = {
@@ -16,9 +16,10 @@ def get_settings() -> Type[BaseSettings]:
         "staging": StagingSettings,
         "production": ProductionSettings,
     }
-    return settings_map[env]
+    settings_class = settings_map[env]
+    return settings_class()  # Make sure to instantiate the class
 
 
 # Global settings instance
-Settings = get_settings()
-settings = Settings()
+Settings = get_settings
+settings = get_settings()

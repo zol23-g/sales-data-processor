@@ -1,4 +1,4 @@
-import { apiClient, ApiError } from './apiClient';
+import { apiClient } from './apiClient';
 import { API_CONFIG, API_ENDPOINTS } from '../config';
 import {
   UploadResponse,
@@ -6,6 +6,9 @@ import {
   HealthResponse,
   JobStatus,
 } from '../../types';
+
+
+export { ApiError } from './apiClient';
 
 // API Service
 export const apiRoutes = {
@@ -44,4 +47,4 @@ export const apiRoutes = {
 };
 
 // Export types for use in components
-export type { ApiError };
+export type { UploadResponse, JobStatusResponse, HealthResponse };

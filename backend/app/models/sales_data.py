@@ -62,6 +62,7 @@ class ProcessingResult:
         return rows
 
 
+@dataclass
 class JobStatus:
     """Track processing job status."""
     
@@ -83,9 +84,11 @@ class JobStatus:
         self.end_time: Optional[float] = None
     
     def start_processing(self) -> None:
-        """Mark job as started."""
-        self.status = self.PROCESSING
-        self.start_time = datetime.now().timestamp()
+        """Mark job as started only if it's pending."""
+        if self.status == self.PENDING:
+            self.status = self.PROCESSING
+            self.start_time = datetime.now().timestamp()
+            self.message = "Processing started"
     
     def update_progress(self, processed: int, total: int) -> None:
         """Update processing progress."""
@@ -100,9 +103,11 @@ class JobStatus:
         self.result_file = result_file
         self.progress = 100
         self.end_time = datetime.now().timestamp()
+        self.message = "Processing completed successfully"
     
     def fail(self, error: str) -> None:
         """Mark job as failed."""
         self.status = self.FAILED
         self.error = error
         self.end_time = datetime.now().timestamp()
+        self.message = f"Processing failed: {error}"
