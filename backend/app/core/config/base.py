@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings
 from pydantic import Field, ConfigDict, field_validator
 
@@ -9,43 +9,43 @@ class BaseSettings(BaseSettings):
     # Application
     APP_NAME: str = "Sales Data Processor"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = Field(False, env="DEBUG")
+    DEBUG: bool = False
     
     # Environment
-    ENVIRONMENT: str = Field("development", env="ENVIRONMENT")
+    ENVIRONMENT: str = "development"
     
     # gRPC
-    GRPC_HOST: str = Field("0.0.0.0", env="GRPC_HOST")
-    GRPC_PORT: int = Field(50051, env="GRPC_PORT")
+    GRPC_HOST: str = "0.0.0.0"
+    GRPC_PORT: int = 50051
     
     # HTTP
-    HTTP_HOST: str = Field("0.0.0.0", env="HTTP_HOST")
-    HTTP_PORT: int = Field(8000, env="HTTP_PORT")
+    HTTP_HOST: str = "0.0.0.0"
+    HTTP_PORT: int = 8000
     
     # File Storage
-    UPLOAD_DIR: str = Field("uploads", env="UPLOAD_DIR")
-    OUTPUT_DIR: str = Field("outputs", env="OUTPUT_DIR")
-    MAX_FILE_SIZE: int = Field(100 * 1024 * 1024, env="MAX_FILE_SIZE")  # 100MB
+    UPLOAD_DIR: str = "uploads"
+    OUTPUT_DIR: str = "outputs"
+    MAX_FILE_SIZE: int = 100 * 1024 * 1024  # 100MB
     
     # Redis
-    REDIS_URL: str = Field("redis://localhost:6379/0", env="REDIS_URL")
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # Celery
-    CELERY_BROKER_URL: str = Field("redis://localhost:6379/0", env="CELERY_BROKER_URL")
-    CELERY_RESULT_BACKEND: str = Field("redis://localhost:6379/0", env="CELERY_RESULT_BACKEND")
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
     
     # Security
-    SECRET_KEY: str = Field("your-secret-key-change-in-production", env="SECRET_KEY")
-    TOKEN_EXPIRE_MINUTES: int = Field(30, env="TOKEN_EXPIRE_MINUTES")
+    SECRET_KEY: str = "your-secret-key-change-in-production"
+    TOKEN_EXPIRE_MINUTES: int = 30
     
-    # CORS 
-    ALLOWED_ORIGINS: List[str] = Field(["http://localhost:3000"], env="ALLOWED_ORIGINS")
+    # CORS - Handle as comma-separated string in env, but convert to list
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
     
     # Database (if needed later)
-    DATABASE_URL: str = Field("", env="DATABASE_URL")
+    DATABASE_URL: str = ""
     
     # Logging
-    LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
+    LOG_LEVEL: str = "INFO"
     
     @field_validator('ALLOWED_ORIGINS', mode='before')
     @classmethod
@@ -67,5 +67,6 @@ class BaseSettings(BaseSettings):
     model_config = ConfigDict(
         case_sensitive=True,
         extra="ignore",
-        env_file_encoding='utf-8'
+        env_file_encoding='utf-8',
+        env_prefix="",  # No prefix for environment variables
     )

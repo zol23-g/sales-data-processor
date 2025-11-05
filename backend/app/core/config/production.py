@@ -1,4 +1,3 @@
-from pydantic import Field
 from .base import BaseSettings
 
 
@@ -24,8 +23,8 @@ class ProductionSettings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://redis:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
     
-    # Security - should be set via environment variables
-    SECRET_KEY: str = Field(..., env="SECRET_KEY")
+    # Security 
+    SECRET_KEY: str = ""  
     
     model_config = {
         "env_file": ".env.production",
